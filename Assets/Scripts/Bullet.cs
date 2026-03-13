@@ -49,7 +49,7 @@ public class Bullet : MonoBehaviour
     {
         if (ShouldIgnore(collision.gameObject)) return;
 
-        Vector2 normal = collision.contacts[0].normal;
+        Vector2 normal = SnapToAxis(collision.contacts[0].normal);
         Vector3 hitPoint = collision.contacts[0].point;
         HandleHit(hitPoint, normal, collision.collider);
     }

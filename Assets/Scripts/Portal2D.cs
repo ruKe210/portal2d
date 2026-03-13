@@ -22,6 +22,9 @@ public class Portal2D : MonoBehaviour
     [Tooltip("传送冷却时间（秒），0 表示无冷却")]
     public float cooldown = 0f;
 
+    [Tooltip("传送门触发区域在法线方向上的厚度（防止高速穿透）")]
+    public float triggerThickness = 2f;
+
     /// <summary>
     /// 传送门依附的墙壁碰撞体，由 Player.SpawnPortal 设置。
     /// 玩家进入传送门时会临时忽略与此碰撞体的碰撞。
@@ -45,6 +48,21 @@ public class Portal2D : MonoBehaviour
         public int enteredSide;
         public Collider2D ignoredWall;       // 源门的墙
         public Collider2D ignoredWallTarget; // 目标门的墙
+    }
+
+    void Start()
+    {
+        // 自动加厚 trigger 区域，防止高速物体穿透
+        BoxCollider2D box = GetComponent<BoxCollider2D>();
+        if (box != null && box.isTrigger)
+        {
+            Vector2 n = portalNormal.normalized;
+            // 法线方向上加厚
+            if (Mathf.Abs(n.x) > Mathf.Abs(n.y))
+                box.size = new Vector2(Mathf.Max(box.size.x, triggerThickness), box.size.y);
+            else
+                box.size = new Vector2(box.size.x, Mathf.Max(box.size.y, triggerThickness));
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -145,11 +163,42 @@ public class Portal2D : MonoBehaviour
                     Cleanup(col, t);
     }
 
+    /// <summary>
+    /// 将世界坐标分解为相对于传送门的法线分量和切线分量
+    /// </summary>
+    void DecomposePosition(Vector3 worldPos, Vector3 portalPos, Vector2 normal,
+        out float normalDist, out float tangentDist)
+    {
+        Vector2 diff = (Vector2)worldPos - (Vector2)portalPos;
+        Vector2 n = normal.normalized;
+        Vector2 tangent = new Vector2(-n.y, n.x);
+        normalDist = Vector2.Dot(diff, n);
+        tangentDist = Vector2.Dot(diff, tangent);
+    }
+
+    /// <summary>
+    /// 从法线分量和切线分量重建世界坐标
+    /// </summary>
+    Vector3 ComposePosition(Vector3 portalPos, Vector2 normal,
+        float normalDist, float tangentDist)
+    {
+        Vector2 n = normal.normalized;
+        Vector2 tangent = new Vector2(-n.y, n.x);
+        Vector2 result = (Vector2)portalPos + n * normalDist + tangent * tangentDist;
+        return new Vector3(result.x, result.y, portalPos.z);
+    }
+
     void UpdateClone(Traveller t)
     {
         if (t.clone == null || targetPortal == null) return;
-        Vector3 lp = transform.InverseTransformPoint(t.original.transform.position);
-        t.clone.transform.position = targetPortal.transform.TransformPoint(lp);
+
+        float nd, td;
+        DecomposePosition(t.original.transform.position, transform.position,
+            portalNormal, out nd, out td);
+
+        // 镜像法线分量和切线分量（完全镜像映射）
+        t.clone.transform.position = ComposePosition(
+            targetPortal.transform.position, targetPortal.portalNormal, -nd, -td);
         t.clone.transform.localScale = t.original.transform.localScale;
     }
 
@@ -179,13 +228,26 @@ public class Portal2D : MonoBehaviour
     {
         if (t.original == null || targetPortal == null) return;
 
-        Vector3 lp = transform.InverseTransformPoint(t.original.transform.position);
-        t.original.transform.position = targetPortal.transform.TransformPoint(lp);
+        // 位置映射：法线分量镜像，切线分量保持
+        float nd, td;
+        DecomposePosition(t.original.transform.position, transform.position,
+            portalNormal, out nd, out td);
+        t.original.transform.position = ComposePosition(
+            targetPortal.transform.position, targetPortal.portalNormal, -nd, -td);
 
+        // 速度映射
         if (t.rb != null)
         {
-            Vector2 lv = transform.InverseTransformDirection(t.rb.velocity);
-            t.rb.velocity = targetPortal.transform.TransformDirection(lv);
+            Vector2 vel = t.rb.velocity;
+            Vector2 nSrc = portalNormal.normalized;
+            Vector2 tSrc = new Vector2(-nSrc.y, nSrc.x);
+            float vn = Vector2.Dot(vel, nSrc);
+            float vt = Vector2.Dot(vel, tSrc);
+
+            Vector2 nDst = targetPortal.portalNormal.normalized;
+            Vector2 tDst = new Vector2(-nDst.y, nDst.x);
+            // 法线和切线速度都镜像
+            t.rb.velocity = nDst * (-vn) + tDst * (-vt);
         }
 
         lastTeleportTime = Time.time;
