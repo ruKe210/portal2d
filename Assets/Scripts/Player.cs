@@ -6,6 +6,7 @@ public class Player : MonoBehaviour
 {
     Rigidbody2D rb;
     public float maxSpeed = 30f;
+    public float moveSpeed = 5f;
     public bool flag=false;
 
 
@@ -27,17 +28,27 @@ public class Player : MonoBehaviour
     }
    void Update()
     {
+        bool movingHorizontally = false;
+
         if (Input.GetKey(KeyCode.A))
         {
-            rb.AddForce(Vector3.left * Time.deltaTime * 30, ForceMode2D.Impulse);
+            rb.velocity = new Vector2(-moveSpeed, rb.velocity.y);
+            movingHorizontally = true;
         }
         if (Input.GetKey(KeyCode.D))
         {
-            rb.AddForce(Vector3.right * Time.deltaTime * 30, ForceMode2D.Impulse);
+            rb.velocity = new Vector2(moveSpeed, rb.velocity.y);
+            movingHorizontally = true;
         }
-        if (Input.GetKey(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            rb.AddForce(Vector3.up * Time.deltaTime * 3000, ForceMode2D.Impulse);
+            rb.velocity = new Vector2(rb.velocity.x, 10f);
+        }
+
+        // 没按左右键时，快速减速水平速度
+        if (!movingHorizontally)
+        {
+            rb.velocity = new Vector2(rb.velocity.x * 0.85f, rb.velocity.y);
         }
     }
     

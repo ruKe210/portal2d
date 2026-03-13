@@ -1,0 +1,9 @@
+# Unity generated
+Library/
+Temp/
+Logs/
+UserSettings/
+ProjectSettings/
+
+# OS
+.DS_Store

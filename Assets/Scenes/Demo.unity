@@ -379,7 +379,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: -0.02, y: -1.73, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -829,7 +829,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!212 &1576554857
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -891,8 +891,8 @@ Transform:
   m_GameObject: {fileID: 1576554854}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.9024, y: -1.4747, z: 0}
-  m_LocalScale: {x: 0.22668004, y: 0.5567509, z: 1}
+  m_LocalPosition: {x: -5.8093, y: -1.4421, z: 0}
+  m_LocalScale: {x: 0.41287658, y: 0.6218907, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -910,6 +910,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 30
+  moveSpeed: 5
+  flag: 0
+  RedPortal: {fileID: 0}
+  GreenPortal: {fileID: 0}
 --- !u!114 &1576554860
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1405,7 +1409,7 @@ Transform:
   m_GameObject: {fileID: 1776427870}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.886, y: -1.53, z: 0}
+  m_LocalPosition: {x: 1.16, y: -1.42, z: 0}
   m_LocalScale: {x: 0.121923, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1420,12 +1424,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1776427870}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd687242fcd8b47739bbd39c6c5f0c0d, type: 3}
+  m_Script: {fileID: 11500000, guid: 7087580099b284527b048475bfce7800, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetPortal: {fileID: 1947066925}
-  teleportOffset: 0.5
-  cooldownTime: 0.5
+  portalNormal: {x: 1, y: 0}
+  teleportThreshold: 0.1
+  stencilId: 1
 --- !u!1 &1947066920
 GameObject:
   m_ObjectHideFlags: 0
@@ -1551,7 +1556,7 @@ Transform:
   m_GameObject: {fileID: 1947066920}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.0369, y: -1.47, z: 0}
+  m_LocalPosition: {x: 4.79, y: -1.43, z: 0}
   m_LocalScale: {x: 0.203832, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1566,12 +1571,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1947066920}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dd687242fcd8b47739bbd39c6c5f0c0d, type: 3}
+  m_Script: {fileID: 11500000, guid: 7087580099b284527b048475bfce7800, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   targetPortal: {fileID: 1776427875}
-  teleportOffset: 0.5
-  cooldownTime: 0.5
+  portalNormal: {x: 1, y: 0}
+  teleportThreshold: 0.1
+  stencilId: 2
 --- !u!1001 &3705891211910500512
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1643,11 +1649,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2815645130374760526, guid: 60c5d24eeda324fea9cb056ab6b56c56, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.01
       objectReference: {fileID: 0}
     - target: {fileID: 2815645130374760526, guid: 60c5d24eeda324fea9cb056ab6b56c56, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.935
+      value: -1.9200001
       objectReference: {fileID: 0}
     - target: {fileID: 2815645130374760526, guid: 60c5d24eeda324fea9cb056ab6b56c56, type: 3}
       propertyPath: m_LocalPosition.z
