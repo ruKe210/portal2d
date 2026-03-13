@@ -75,6 +75,7 @@
     <Compile Include="Assets/Scripts/PortalSmooth.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets/Shaders/PortalClipPlane.shader" />
     <None Include="Assets/Shaders/PortalClippedSprite.shader" />
     <None Include="Assets/Shaders/PortalStencilMask.shader" />
   </ItemGroup>

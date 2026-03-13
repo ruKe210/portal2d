@@ -28,8 +28,8 @@ Transform:
   m_GameObject: {fileID: 5129586929854984802}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.19, z: 0}
-  m_LocalScale: {x: 2.1365, y: 0.18041487, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.2, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -145,5 +145,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetPortal: {fileID: 0}
   portalNormal: {x: 1, y: 0}
-  teleportThreshold: 0.1
-  stencilId: 1
+  cooldown: 0
+  wallCollider: {fileID: 0}

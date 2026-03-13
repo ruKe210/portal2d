@@ -13,7 +13,7 @@ Shader "Portal/ClippedSprite"
     {
         Tags
         {
-            "Queue"="Transparent"
+            "Queue"="Transparent+0"
             "IgnoreProjector"="True"
             "RenderType"="Transparent"
             "PreviewType"="Plane"

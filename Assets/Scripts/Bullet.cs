@@ -6,51 +6,30 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     [Header("子弹设置")]
-    [Tooltip("子弹速度")]
     public float speed = 10f;
-
-    [Tooltip("子弹生存时间（秒），超时自动销毁")]
     public float lifeTime = 5f;
 
-    [Tooltip("使用射线检测防止穿透")]
-    public bool useRaycast = true;
+    [HideInInspector] public Vector3 direction;
+    [HideInInspector] public bool isRedPortalBullet = true; // true=红门, false=绿门
 
-    public Portal RedPortal;
-    public Portal GreenPortal;
-
-
-    public Vector3 direction ;
     private Rigidbody2D rb;
     private Coroutine lifetimeCoroutine;
-    private Vector3 lastPosition;
-    
     private Player player;
-    // private bool flag = false;
 
     void Awake()
     {
-        // flag = false;
         player = GameObject.FindWithTag("Player").GetComponent<Player>();
         rb = GetComponent<Rigidbody2D>();
     }
 
     void OnEnable()
     {
-        // 每次从对象池激活时，重置生存时间计时器
         if (lifetimeCoroutine != null)
-        {
             StopCoroutine(lifetimeCoroutine);
-        }
         lifetimeCoroutine = StartCoroutine(LifetimeTimer());
 
-        // 记录初始位置
-        lastPosition = transform.position;
-
-        // 设置 Rigidbody2D 为 Continuous 碰撞检测
         if (rb != null)
-        {
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        }
     }
 
     IEnumerator LifetimeTimer()
@@ -61,77 +40,74 @@ public class Bullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        // 碰到任何物体都销毁子弹
-        Debug.Log($"子弹碰到: {other.gameObject.name}");
-        if(other.gameObject.layer == LayerMask.NameToLayer("Portal")||other.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            return;
-        }
-        else
-        {
-            if(player.flag)
-            {
-                player.GreenPortal = Instantiate(GreenPortal, transform.position, Quaternion.identity);
-                player.MakePortalConnection();
-            }
-            else
-            {
-                player.RedPortal = Instantiate(RedPortal, transform.position, Quaternion.identity);
-
-            }
-            player.flag=!player.flag;
-
-        }
-        ReturnToPool();
+        if (ShouldIgnore(other.gameObject)) return;
+        // 用子弹自身位置作为碰撞点（Trigger 没有 contact point）
+        HandleHit(transform.position, GetWallNormal(other), other);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // 如果使用的是普通碰撞器（非Trigger）
-        Debug.Log($"子弹碰到: {collision.gameObject.name}");
-        if(collision.gameObject.layer == LayerMask.NameToLayer("Portal")||collision.gameObject.layer == LayerMask.NameToLayer("Player"))
-        {
-            return;
-        }
+        if (ShouldIgnore(collision.gameObject)) return;
+
+        Vector2 normal = collision.contacts[0].normal;
+        Vector3 hitPoint = collision.contacts[0].point;
+        HandleHit(hitPoint, normal, collision.collider);
+    }
+
+    bool ShouldIgnore(GameObject obj)
+    {
+        int layer = obj.layer;
+        return layer == LayerMask.NameToLayer("Portal")
+            || layer == LayerMask.NameToLayer("Player");
+    }
+
+    /// <summary>
+    /// 从 Trigger 碰撞中估算墙壁法线（没有 ContactPoint，用子弹方向反推）
+    /// </summary>
+    Vector2 GetWallNormal(Collider2D other)
+    {
+        // 用子弹飞行方向的反方向作为近似法线
+        // 然后对齐到最近的轴向（上下左右），让传送门贴合墙壁
+        Vector2 approxNormal = -direction.normalized;
+        return SnapToAxis(approxNormal);
+    }
+
+    /// <summary>
+    /// 将方向对齐到最近的轴向（上下左右）
+    /// </summary>
+    Vector2 SnapToAxis(Vector2 dir)
+    {
+        if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y))
+            return dir.x > 0 ? Vector2.right : Vector2.left;
         else
+            return dir.y > 0 ? Vector2.up : Vector2.down;
+    }
+
+    void HandleHit(Vector3 hitPosition, Vector2 wallNormal, Collider2D wallCol)
+    {
+        if (player != null)
         {
-            if(player.flag)
-            {
-                player.GreenPortal = Instantiate(GreenPortal, transform.position, Quaternion.identity);
-                player.MakePortalConnection();
-            }
-            else
-            {
-                player.RedPortal = Instantiate(RedPortal, transform.position, Quaternion.identity);
-            }
-            player.flag=!player.flag;
-            // Instantiate(RedPortal, transform.position, Quaternion.identity);
+            player.SpawnPortal(isRedPortalBullet, hitPosition, wallNormal, wallCol);
         }
         ReturnToPool();
     }
 
     void ReturnToPool()
     {
-        // 停止生存时间协程
         if (lifetimeCoroutine != null)
         {
             StopCoroutine(lifetimeCoroutine);
             lifetimeCoroutine = null;
         }
 
-        // 返回到对象池
         if (BulletPool.Instance != null)
-        {
             BulletPool.Instance.ReturnBullet(gameObject);
-        }
         else
-        {
-            // 如果没有对象池，直接销毁
             Destroy(gameObject);
-        }
     }
+
     void Update()
     {
-        this.transform.Translate(direction * speed * Time.deltaTime);
+        transform.Translate(direction * speed * Time.deltaTime);
     }
 }
